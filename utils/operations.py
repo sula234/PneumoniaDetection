@@ -1,4 +1,5 @@
 import torch
+from tqdm import tqdm
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -7,7 +8,7 @@ print(f'Using device={device}')
 
 def validate(net,test_loader):
   count=acc=0
-  for xo,yo in test_loader:
+  for xo,yo in tqdm(test_loader):
     x,y = xo.to(device), yo.to(device)
     with torch.no_grad():
       p = net.forward(x)
@@ -16,12 +17,12 @@ def validate(net,test_loader):
       count+=len(x)
   return acc/count
 
-def train(net,train_loader,test_loader,epochs=3,loss_fn=torch.nn.CrossEntropyLoss()):
+def train(net,train_loader,test_loader,epochs,loss_fn):
   net = net.to(device)
   optimizer = torch.optim.Adam(net.parameters())
   for ep in range(epochs):
     count=acc=0
-    for xo,yo in train_loader:
+    for xo,yo in tqdm(train_loader):
       x = xo.to(device)
       y = yo.to(device)
       optimizer.zero_grad()

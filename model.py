@@ -11,7 +11,7 @@ class Net(nn.Module):
         self.dropout = nn.Dropout(0.25)
         self.dropout1 = nn.Dropout(0.3)
         self.flat = nn.Flatten()
-        self.fc1 = nn.LazyLinear(128)
+        self.fc1 = nn.Linear(25088, 128)
         self.fc2 = nn.Linear(128, 35)
 
     def forward(self, x):
@@ -25,3 +25,7 @@ class Net(nn.Module):
         x = nn.functional.relu(self.fc1(x))
         x = self.fc2(x)
         return x
+    
+    def get_parameters_amount(self) -> int:
+        '''Return the number of parameters of the model'''
+        return sum(p.numel() for p in self.parameters())

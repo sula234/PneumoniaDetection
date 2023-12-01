@@ -1,6 +1,7 @@
 import torch
 import torchvision
-from torchvision.transforms import ToTensor
+from os import path
+from pathlib import Path
 
 
 # define transform functions which should applied to images
@@ -10,12 +11,12 @@ transform = torchvision.transforms.Compose(
     torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 # prepare loader for train data
-trainset = torchvision.datasets.ImageFolder(root='./petfaces/train', transform=transform )
+data_dir = Path('C:/Users/sulak/Desktop/ROBT407Final/data')
+trainset = torchvision.datasets.ImageFolder(root=path.join(data_dir, 'train'), transform=transform )
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=10, shuffle=True)
 
 # prepare loader for test data
-testset = torchvision.datasets.ImageFolder(root='./petfaces/test', transform=transform)
-testloader = torch.utils.data.DataLoader(testset, batch_size=10, shuffle=False)
+testset = torchvision.datasets.ImageFolder(root=path.join(data_dir, 'val'), transform=transform)
 
 # save all classes to list
 classes = ('cat', 'dog')
