@@ -1,43 +1,21 @@
-import os
-import shutil
-import random
+import torch
+import torchvision
+from torchvision.transforms import ToTensor
 
-# Path to the original dataset
-dataset_path = "dataset/train"
 
-# Path to the new folders
-cats_folder = "dataset/train/cats"
-dogs_folder = "dataset/train/dogs"
-val_cats_folder = "dataset/val/cats"
-val_dogs_folder = "dataset/val/dogs"
+# define transform functions which should applied to images
+transform = torchvision.transforms.Compose(
+    [torchvision.transforms.Resize((128, 128)),
+    torchvision.transforms.ToTensor(),
+    torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-# Create the new folders if they don't exist
-os.makedirs(cats_folder, exist_ok=True)
-os.makedirs(dogs_folder, exist_ok=True)
-os.makedirs(val_cats_folder, exist_ok=True)
-os.makedirs(val_dogs_folder, exist_ok=True)
+# prepare loader for train data
+trainset = torchvision.datasets.ImageFolder(root='./petfaces/train', transform=transform )
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=10, shuffle=True)
 
-# Ratio for splitting (e.g., 80% train, 20% validation)
-train_ratio = 0.8
+# prepare loader for test data
+testset = torchvision.datasets.ImageFolder(root='./petfaces/test', transform=transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=10, shuffle=False)
 
-# Iterate through the files in the original dataset
-for filename in os.listdir(dataset_path):
-    if filename.endswith(".jpg"):  # Assuming images are in JPG format
-        # Extract class (cat or dog) from the filename
-        class_name = filename.split('.')[0]
-
-        # Define the source and destination paths
-        source_path = os.path.join(dataset_path, filename)
-        
-        # Decide whether to put the image in the training or validation set
-        if random.uniform(0, 1) < train_ratio:
-            destination_folder = cats_folder if class_name == "cat" else dogs_folder
-        else:
-            destination_folder = val_cats_folder if class_name == "cat" else val_dogs_folder
-
-        destination_path = os.path.join(destination_folder, filename)
-
-        # Move the file to the appropriate folder
-        shutil.move(source_path, destination_path)
-
-print("Dataset has been divided into train and val sets for cats and dogs.")
+# save all classes to list
+classes = ('cat', 'dog')
