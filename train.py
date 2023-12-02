@@ -45,11 +45,11 @@ def app(cfg: DictConfig) -> None:
     if pretrained:
         checkpoint = torch.load(model_path)
 
-    # mixed precision setup
-    dtype = "bfloat16"
-    ptdtype = {'float32': torch.float32,
-               'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
-    torch.amp.autocast(device_type="cuda", dtype=ptdtype)
+    # # mixed precision setup
+    # dtype = "bfloat16"
+    # ptdtype = {'float32': torch.float32,
+    #            'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
+    # torch.amp.autocast(device_type="cuda", dtype=ptdtype)
     
     checkpoints = []
     for model in models:
