@@ -11,7 +11,7 @@ transform = torchvision.transforms.Compose(
     torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 # prepare loader for train data
-data_dir = Path('C:/Users/sulak/Desktop/ROBT407Final/data')
+data_dir = Path('data')
 trainset = torchvision.datasets.ImageFolder(root=path.join(data_dir, 'train'), transform=transform )
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=10, shuffle=True)
 
