@@ -2,19 +2,27 @@ import torch
 from tqdm import tqdm
 from model import CNN, MLP, VGG16, PretrainedVGG16
 import os
+import torch.nn.functional as F
 
 EXPs_PATH = "models"
 
 def validate(net,test_loader,device):
-  count=acc=0
+  num_correct=num_examples=0
   for xo,yo in tqdm(test_loader,desc="Validation"):
     x,y = xo.to(device), yo.to(device)
     with torch.no_grad():
       p = net.forward(x)
-      _,predicted = torch.max(p,1)
-      acc+=(predicted==y).sum()
-      count+=len(x)
-  return acc/count
+      
+
+      #loss = loss_fn(output,targets) 
+      #valid_loss += loss.data.item() * inputs.size(0)
+                        
+      correct = torch.eq(torch.max(F.softmax(p, dim=1), dim=1)[1], y).view(-1)
+      num_correct += torch.sum(correct).item()
+      num_examples += correct.shape[0]
+    #   acc+=(predicted==y).sum()
+    #   count+=len(x)
+  return num_correct / num_examples
 
 def train(net,train_loader,test_loader,epochs,loss_fn, optimizer, log, model_name):
   device = "cuda" if torch.cuda.is_available() else "cpu"
