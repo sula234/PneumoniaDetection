@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-from model import CNN, MLP
+from model import CNN, MLP, VGG16
 import os
 
 EXPs_PATH = "models"
@@ -55,7 +55,15 @@ def get_model_from_cfg(model: str):
   elif model.upper() == "MLP":
     return MLP()
   
+  elif model.upper() == "VGG16":
+    return VGG16()
+  
 def create_new_experiment():
+    # Check if the folder exists
+    if not os.path.exists("models"):
+        # If it doesn't exist, create it
+        os.makedirs("models")
+    
   # Check existing folders in the models directory
     existing_folders = [folder for folder in os.listdir(EXPs_PATH) if folder.startswith("Exp_")]
 
