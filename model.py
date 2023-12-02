@@ -118,3 +118,7 @@ class VGG16(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+    
+    def get_parameters_amount(self) -> int:
+        '''Return the number of parameters of the model'''
+        return sum(p.numel() for p in self.parameters())
