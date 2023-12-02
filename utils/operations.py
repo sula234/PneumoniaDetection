@@ -3,31 +3,45 @@ from tqdm import tqdm
 from model import CNN, MLP, VGG16, PretrainedVGG16
 import os
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 
 EXPs_PATH = "models"
 
-def validate(net,test_loader,device):
-  num_correct=num_examples=0
+def validate(net,test_loader,device, loss_fn):
+  count=acc=0
+  running_loss = 0.0
   for xo,yo in tqdm(test_loader,desc="Validation"):
     x,y = xo.to(device), yo.to(device)
     with torch.no_grad():
       p = net.forward(x)
-      
 
-      #loss = loss_fn(output,targets) 
-      #valid_loss += loss.data.item() * inputs.size(0)
-                        
-      correct = torch.eq(torch.max(F.softmax(p, dim=1), dim=1)[1], y).view(-1)
-      num_correct += torch.sum(correct).item()
-      num_examples += correct.shape[0]
-    #   acc+=(predicted==y).sum()
-    #   count+=len(x)
-  return num_correct / num_examples
+      # get loss 
+      loss = loss_fn(p, y)
+      running_loss += loss.item()
+
+      # predict
+      _,predicted = torch.max(F.softmax(p,1), 1)
+      
+      acc+=(predicted==y).sum()
+      count+=len(x)
+
+  return acc/count, running_loss/len(test_loader)
 
 def train(net,train_loader,test_loader,epochs,loss_fn, optimizer, log, model_name):
   device = "cuda" if torch.cuda.is_available() else "cpu"
   log.info(f'Using device={device}') 
   net = net.to(device)
+  
+  # ===================================
+  # metrics
+
+#   roc_curve_data = {'true': [], 'probs': []}
+#   pr_curve_data = {'true': [], 'probs': []}
+
+  metrics = {"losses": {'train': [], 'validate': []},
+             "accuracies": {'train': [], 'validate': []}}
+  # ===================================
+
 
   for ep in range(epochs):
     count=acc=0
@@ -44,15 +58,25 @@ def train(net,train_loader,test_loader,epochs,loss_fn, optimizer, log, model_nam
       _,predicted = torch.max(p,1)
       acc+=(predicted==y).sum()
       count+=len(x)
-    val_acc = validate(net,test_loader,device=device)
+
+    # get validation data
+    val_acc, val_loss = validate(net,test_loader,device=device, loss_fn=loss_fn)
+
     log.info(f"Epoch={ep}, Train accuracy={acc/count}, Validation accuracy={val_acc}, Loss={running_loss/len(train_loader)}")
+
+    # save metrics
+    metrics["losses"]["validate"].append(val_loss)
+    metrics["losses"]["train"].append(running_loss/len(train_loader))
+
+    metrics["accuracies"]["validate"].append(val_acc)
+    metrics["accuracies"]["train"].append(acc/count)
 
   # save model
   checkpoint = {
     "model": net.state_dict(),
     "optimizer": optimizer.state_dict()
     }
-  return checkpoint
+  return checkpoint, metrics
 
 
 def get_model_from_cfg(model: str):
@@ -94,12 +118,33 @@ def create_new_experiment():
     return new_exp_folder
 
 
-def save_experiment(new_exp_folder, model_names, checkpoints):
+def save_experiment(new_exp_folder, model_names, checkpoints, metrics):
   
-  for checkpoint, model_name in zip(checkpoints,model_names):
+  for checkpoint, model_name, metric in zip(checkpoints, model_names, metrics):
     new_model_path = os.path.join(new_exp_folder, model_name + ".pth")
     torch.save(checkpoint, new_model_path)
+    plot_metrics(metric["losses"] , metric["accuracies"], new_exp_folder, model_name)
 
 # TODO: finish 
 def create_experiment_analysis():
   pass
+
+
+def plot_metrics(losses, accuracies, save_path, model_name):
+    # Plot loss
+    plt.plot(losses['train'], label='Training Loss')
+    plt.plot(losses['validate'], label='Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.savefig(f'{save_path}/loss_plot_{model_name}.png')
+    plt.clf()
+
+    # Plot accuracy
+    plt.plot([loss.cpu() for loss in accuracies['validate']], label='Validation Accuracy')
+    plt.plot([loss.cpu() for loss in accuracies['train']], label='Train Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig(f'{save_path}/accuracy_plot_{model_name}.png')
+    plt.clf()

@@ -52,6 +52,7 @@ def app(cfg: DictConfig) -> None:
     # torch.amp.autocast(device_type="cuda", dtype=ptdtype)
     
     checkpoints = []
+    metrics = []
     for model in models:
         # model
         net = get_model_from_cfg(model)
@@ -72,18 +73,19 @@ def app(cfg: DictConfig) -> None:
             optim.load_state_dict(checkpoint["optimizer"])
 
         # define dataloaders
-        testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False)
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=False)
+        testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=True)
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True)
 
-        checkpoint = train(net=net, train_loader=trainloader, test_loader=testloader, 
+        checkpoint, metric = train(net=net, train_loader=trainloader, test_loader=testloader, 
             epochs=epochs, loss_fn=loss_fn, optimizer=optim, log=log, model_name=model)
         checkpoints.append(checkpoint)
+        metrics.append(metric)
         log.info(f"{model}'s checkpoint is saved")
 
     if len(checkpoints) != 0:
         # Write checkpoints as desired, e.g.,
         new_exp_folder = create_new_experiment()
-        save_experiment(new_exp_folder=new_exp_folder, model_names=models, checkpoints=checkpoints)
+        save_experiment(new_exp_folder=new_exp_folder, model_names=models, checkpoints=checkpoints, metrics=metrics)
         log.info("Experiment is saved")
     else:
         log.warning("No models in checkpoints")
