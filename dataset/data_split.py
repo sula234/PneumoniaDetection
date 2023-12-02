@@ -3,13 +3,13 @@ import shutil
 import random
 
 # Path to the original dataset
-dataset_path = "dataset/train"
+dataset_path = "data/train"
 
 # Path to the new folders
-cats_folder = "dataset/train/cats"
-dogs_folder = "dataset/train/dogs"
-val_cats_folder = "dataset/val/cats"
-val_dogs_folder = "dataset/val/dogs"
+cats_folder = "data/train/cats"
+dogs_folder = "data/train/dogs"
+val_cats_folder = "data/val/cats"
+val_dogs_folder = "data/val/dogs"
 
 # Create the new folders if they don't exist
 os.makedirs(cats_folder, exist_ok=True)
