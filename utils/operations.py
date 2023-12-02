@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-from model import CNN, MLP, VGG16
+from model import CNN, MLP, VGG16, PretrainedVGG16
 import os
 
 EXPs_PATH = "models"
@@ -57,6 +57,9 @@ def get_model_from_cfg(model: str):
   
   elif model.upper() == "VGG16":
     return VGG16()
+  
+  elif model.upper() == "PRETRAINEDVGG16":
+    return PretrainedVGG16()
   
 def create_new_experiment():
     # Check if the folder exists

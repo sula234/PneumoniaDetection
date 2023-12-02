@@ -1,4 +1,5 @@
 import torch.nn as nn
+from torchvision import models
 
 
 NUM_CLASSES = 2
@@ -118,6 +119,29 @@ class VGG16(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+    
+    def get_parameters_amount(self) -> int:
+        '''Return the number of parameters of the model'''
+        return sum(p.numel() for p in self.parameters())
+    
+
+
+class PretrainedVGG16(nn.Module):
+    def __init__(self):
+        super(PretrainedVGG16, self).__init__()
+        
+        # Load pre-trained VGG16 model from torchvision
+        self.vgg16 = models.vgg16(pretrained=True)
+        
+        # Freeze all layers except the final classifier layers
+        for param in self.vgg16.parameters():
+            param.requires_grad = False
+        
+        # Modify the final classifier layers for the new task
+        self.vgg16.classifier[-1] = nn.Linear(4096, NUM_CLASSES)
+
+    def forward(self, x):
+        return self.vgg16(x)
     
     def get_parameters_amount(self) -> int:
         '''Return the number of parameters of the model'''
