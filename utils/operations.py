@@ -5,7 +5,10 @@ import os
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
-from sklearn import metrics
+
+import shutil
+import pandas as pd
+import seaborn as sn
 
 EXPs_PATH = "models"
 
@@ -59,6 +62,7 @@ def train(net,train_loader,test_loader,epochs,loss_fn, optimizer, log, model_nam
       optimizer.step()
       running_loss += loss.item()
       _,predicted = torch.max(p,1)
+      
       acc+=(predicted==y).sum()
       count+=len(x)
 
@@ -122,7 +126,11 @@ def create_new_experiment():
 
 
 def save_experiment(new_exp_folder, model_names, checkpoints, metrics):
-  
+  # save config file
+  file_path = os.path.join("conf", "config.yaml")
+  save_file_in_folder(file_path, new_exp_folder)
+
+
   for checkpoint, model_name, metric in zip(checkpoints, model_names, metrics):
     new_model_path = os.path.join(new_exp_folder, model_name + ".pth")
     torch.save(checkpoint, new_model_path)
@@ -153,11 +161,11 @@ def plot_metrics(losses, accuracies, conf_matrix, save_path, model_name):
     plt.clf()
 
     # Plot confusion matrix
-    plt.imshow(conf_matrix, interpolation='nearest', cmap=plt.cm.Blues)
+    df_cm = pd.DataFrame(conf_matrix, ["cat", "dog"], ["cat", "dog"])
+    plt.figure(figsize=(10,7))
+    sn.set(font_scale=1.4) # for label size
+    sn.heatmap(df_cm, annot=True, annot_kws={"size": 16}) # font size
     plt.title('Confusion Matrix')
-    plt.colorbar()
-    plt.xlabel('Predicted Label')
-    plt.ylabel('True Label')
     plt.savefig(f'{save_path}/confusion_matrix.png')
     plt.clf()
 
@@ -185,3 +193,15 @@ def get_confusion_matrix(net, test_loader, device="cuda"):
     confusion_mat = confusion_matrix(all_labels, all_preds)
 
     return confusion_mat
+
+
+def save_file_in_folder(file_path, target_folder):
+
+    # Extract the file name from the original path
+    file_name = os.path.basename(file_path)
+
+    # Construct the destination path in the target folder
+    destination_path = os.path.join(target_folder, file_name)
+
+    # Copy or move the file to the target folder
+    shutil.copyfile(file_path, destination_path)  # Use shutil.move if you want to move the file
