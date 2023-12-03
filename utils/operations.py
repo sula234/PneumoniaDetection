@@ -4,6 +4,8 @@ from model import CNN, MLP, VGG16, PretrainedVGG16
 import os
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+from sklearn import metrics
 
 EXPs_PATH = "models"
 
@@ -39,7 +41,8 @@ def train(net,train_loader,test_loader,epochs,loss_fn, optimizer, log, model_nam
 #   pr_curve_data = {'true': [], 'probs': []}
 
   metrics = {"losses": {'train': [], 'validate': []},
-             "accuracies": {'train': [], 'validate': []}}
+             "accuracies": {'train': [], 'validate': []},
+             "conf_matrix": None}
   # ===================================
 
 
@@ -123,14 +126,14 @@ def save_experiment(new_exp_folder, model_names, checkpoints, metrics):
   for checkpoint, model_name, metric in zip(checkpoints, model_names, metrics):
     new_model_path = os.path.join(new_exp_folder, model_name + ".pth")
     torch.save(checkpoint, new_model_path)
-    plot_metrics(metric["losses"] , metric["accuracies"], new_exp_folder, model_name)
+    plot_metrics(metric["losses"] , metric["accuracies"], metric["conf_matrix"], new_exp_folder, model_name)
 
 # TODO: finish 
 def create_experiment_analysis():
   pass
 
 
-def plot_metrics(losses, accuracies, save_path, model_name):
+def plot_metrics(losses, accuracies, conf_matrix, save_path, model_name):
     # Plot loss
     plt.plot(losses['train'], label='Training Loss')
     plt.plot(losses['validate'], label='Validation Loss')
@@ -148,3 +151,37 @@ def plot_metrics(losses, accuracies, save_path, model_name):
     plt.legend()
     plt.savefig(f'{save_path}/accuracy_plot_{model_name}.png')
     plt.clf()
+
+    # Plot confusion matrix
+    plt.imshow(conf_matrix, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title('Confusion Matrix')
+    plt.colorbar()
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+    plt.savefig(f'{save_path}/confusion_matrix.png')
+    plt.clf()
+
+
+def get_confusion_matrix(net, test_loader, device="cuda"):
+    net.eval()
+    
+    # Move the model to the specified device
+    net.to(device)
+
+    all_labels = []
+    all_preds = []
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+
+            outputs = net(inputs)
+            _, preds = torch.max(outputs, 1)
+
+            all_labels.extend(labels.cpu().numpy())
+            all_preds.extend(preds.cpu().numpy())
+
+    # Calculate confusion matrix
+    confusion_mat = confusion_matrix(all_labels, all_preds)
+
+    return confusion_mat

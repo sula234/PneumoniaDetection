@@ -8,7 +8,7 @@ from omegaconf import DictConfig
 
 from dataset import trainset, testset
 from model import CNN
-from utils.operations import train, get_model_from_cfg, save_experiment, create_new_experiment
+from utils.operations import train, get_model_from_cfg, save_experiment, create_new_experiment, get_confusion_matrix
 from utils.log import formatter
 
 
@@ -79,6 +79,9 @@ def app(cfg: DictConfig) -> None:
         checkpoint, metric = train(net=net, train_loader=trainloader, test_loader=testloader, 
             epochs=epochs, loss_fn=loss_fn, optimizer=optim, log=log, model_name=model)
         checkpoints.append(checkpoint)
+
+        conf_matrix = get_confusion_matrix(net, testloader)
+        metric["conf_matrix"] = conf_matrix
         metrics.append(metric)
         log.info(f"{model}'s checkpoint is saved")
 
