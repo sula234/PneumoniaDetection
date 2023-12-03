@@ -5,8 +5,8 @@ defaults:
 
 # unet config
 config:
-  models: [ CNN]
-  epochs: 2
+  models: [PretrainedVGG16, VGG16, CNN, MLP]
+  epochs: 10
   batch_size: 8
   lr: 0.001
   weight_decay: 1e-5
