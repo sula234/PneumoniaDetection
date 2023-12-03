@@ -54,7 +54,7 @@ class DogsVsCatsDataset(Dataset):
 
         #apply augumentation with given probabilty 
         if random.random() <= self.augment_prob:
-            new_transforms = self.default_transforms + self.augumentation
+            new_transforms = self.augumentation + self.default_transforms
             t = transforms.Compose(new_transforms)
         else:
             t = transforms.Compose(self.default_transforms)
@@ -64,30 +64,6 @@ class DogsVsCatsDataset(Dataset):
 
         
         return original_image, class_label
-
-    
-
-# def visualizeAugmentedImage(dataset, index_to_visualize=0):
-#   original_image, original_label = dataset[index_to_visualize]
-#   augmented_images, augmented_label = dataset[index_to_visualize]
-#   # Create a figure to display images
-#   num_images = len(augmented_images) + 1
-#   fig, axes = plt.subplots(1, num_images, figsize=(12, 4))
-#   axes = axes.flatten()
-
-#   # Visualize original image
-#   axes[0].imshow(F.to_pil_image(original_image))
-#   axes[0].set_title(f"Original\nLabel: {original_label}")
-#   axes[0].axis('off')
-
-#   # Visualize augmented images
-#   for i in range(1, num_images):
-#     axes[i].imshow(F.to_pil_image(augmented_images[i - 1]))
-#     axes[i].set_title(f"Augmented\nLabel: {augmented_label}")
-#     axes[i].axis('off')
-
-#   plt.tight_layout()
-#   plt.show()
 
 
 trainset = DogsVsCatsDataset(os.path.join(data_dir, 'train'))
