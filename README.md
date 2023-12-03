@@ -34,3 +34,7 @@ python3 -m venv .venv
 venv/Scripts/activate
 pip install -r requirements. txt 
 ```
+Also be sure to run this command. To revert to the last working commit:
+```
+!git checkout d1b571b177bf0f44b76946d13de9c2073c1ff970
+```
