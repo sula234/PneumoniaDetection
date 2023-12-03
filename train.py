@@ -6,7 +6,7 @@ from torch.cuda.amp import GradScaler
 import hydra
 from omegaconf import DictConfig
 
-from dataset import trainset, testset
+from dataset import trainset, testset, visualize_original_and_augmented
 from model import CNN
 from utils.operations import train, get_model_from_cfg, save_experiment, create_new_experiment, get_confusion_matrix
 from utils.log import formatter
